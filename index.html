@@ -1,293 +1,432 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MOSSARI TRAVEL - Custom Ticket Gen</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Space+Mono:wght@400;700&family=Press+Start+2P&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>MOSSARI TRAVEL | Botanical Manga Style</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Press+Start+2P&family=Noto+Sans+JP:wght@300;700&display=swap');
 
-:root {
-  --bg: #1a1a2e; --paper: #16213e; --paper2: #0f3460;
-  --sage: #4ade80; --accent: #e11d48;
-  --ticket-bg: #fffbf0; --ticket-line: #d4a843;
-}
+        :root {
+            --teal-brand: #008080;
+            --teal-light: #e0f2f1;
+            --teal-dark: #004d40;
+            --accent-pink: #ff80ab;
+            --ink: #2c3e50;
+            --ticket-bg: #fffbf0;
+            --border-line: #008080;
+        }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Space Mono', monospace;
-  background: var(--bg); color: #fff;
-  display: flex; flex-direction: column; align-items: center; padding: 20px;
-}
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: var(--teal-light);
+            color: var(--ink);
+            overflow-x: hidden;
+        }
 
-h1 { font-family: 'Press Start 2P', cursive; font-size: 1rem; margin-bottom: 20px; color: var(--sage); letter-spacing: -1px; }
+        /* --- 1. Door Intro Motion --- */
+        #intro-door {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9999; display: flex; transition: transform 1s ease-in-out;
+        }
+        .door-leaf {
+            width: 50%; height: 100%; background: var(--teal-brand);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+            border: 4px solid var(--teal-dark);
+            position: relative;
+        }
+        .door-left { border-right: none; }
+        .door-right { border-left: none; }
+        .door-knob {
+            width: 60px; height: 60px; background: gold; border-radius: 50%;
+            position: absolute; top: 50%; border: 4px solid #b8860b;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .door-left .door-knob { right: 20px; }
+        .door-right .door-knob { left: 20px; }
+        .door-text {
+            color: white; font-family: 'Press Start 2P'; font-size: 1.2rem;
+            position: absolute; bottom: 20%; width: 200%; text-align: center;
+        }
+        .opened .door-left { transform: translateX(-100%); }
+        .opened .door-right { transform: translateX(100%); }
+        .opened { pointer-events: none; }
 
-.main-container {
-  display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; width: 100%; max-width: 900px;
-}
+        /* --- 2. Main Layout --- */
+        .app-container {
+            max-width: 1100px; margin: 0 auto; padding: 40px 20px;
+            display: grid; grid-template-columns: 380px 1fr; gap: 30px;
+            opacity: 0; transition: opacity 1s;
+        }
+        .visible .app-container { opacity: 1; }
 
-/* Controls Panel */
-.panel {
-  flex: 1; min-width: 320px; background: var(--paper); padding: 20px; border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-}
+        .sidebar { background: white; padding: 25px; border-radius: 20px; border: 3px solid var(--teal-brand); box-shadow: 8px 8px 0 var(--teal-dark); }
+        h2 { font-family: 'Space Mono'; font-size: 0.9rem; margin-bottom: 20px; border-bottom: 2px solid var(--teal-brand); padding-bottom: 5px; }
 
-.input-group { margin-bottom: 15px; }
-label { display: block; font-size: 0.7rem; color: #94a3b8; margin-bottom: 6px; letter-spacing: 1px; }
-input, select, textarea {
-  width: 100%; padding: 12px; background: var(--paper2); border: 1px solid #1f4068;
-  color: #fff; border-radius: 8px; font-family: inherit; outline: none;
-}
-input:focus { border-color: var(--sage); }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; color: var(--teal-brand); }
+        input, select, textarea {
+            width: 100%; padding: 10px; border: 2px solid var(--teal-light);
+            border-radius: 8px; font-family: inherit; font-size: 0.9rem;
+        }
+        input:focus { border-color: var(--teal-brand); outline: none; }
 
-.btn {
-  width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer;
-  font-weight: bold; margin-bottom: 10px; transition: 0.2s; font-family: inherit;
-}
-.btn-primary { background: var(--sage); color: #1a1a2e; }
-.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-.btn-sub { background: #475569; color: white; }
+        .btn {
+            width: 100%; padding: 12px; border: none; border-radius: 50px;
+            font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px;
+            font-family: inherit; border: 2px solid transparent;
+        }
+        .btn-main { background: var(--teal-brand); color: white; }
+        .btn-main:hover { background: var(--teal-dark); }
+        .btn-sub { background: white; border-color: var(--teal-brand); color: var(--teal-brand); }
 
-/* Canvas Area */
-.preview-area { flex: 1; min-width: 340px; text-align: center; }
-#ticketCanvas {
-  max-width: 100%; height: auto; border-radius: 4px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-}
+        /* --- 3. Photo & Character Slots --- */
+        .slot-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .photo-slot {
+            flex: 1; aspect-ratio: 1; background: var(--teal-light);
+            border: 2px dashed var(--teal-brand); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; overflow: hidden; font-size: 1.2rem;
+        }
+        .photo-slot img { width: 100%; height: 100%; object-fit: cover; }
 
-/* Modal Styling */
-.modal {
-  display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
-}
-.modal-content { max-width: 100%; max-height: 70vh; margin-bottom: 20px; }
-#qrcode { background: white; padding: 20px; border-radius: 8px; }
+        .pixel-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
+        .pixel-opt {
+            aspect-ratio: 1; border: 2px solid #ddd; border-radius: 5px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            background: #eee; font-size: 1.5rem;
+        }
+        .pixel-opt.active { border-color: var(--teal-brand); background: var(--teal-light); }
 
-.toast {
-  position: fixed; bottom: 20px; background: var(--sage); color: #1a1a2e;
-  padding: 10px 20px; border-radius: 20px; font-weight: bold; display: none; z-index: 3000;
-}
-</style>
+        /* --- 4. Canvas Preview --- */
+        .preview-area { position: sticky; top: 40px; text-align: center; }
+        #ticketCanvas {
+            max-width: 100%; height: auto; border-radius: 10px;
+            filter: drop-shadow(0 15px 30px rgba(0,128,128,0.2));
+        }
+
+        /* --- 5. Modals --- */
+        .modal {
+            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.85); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-content { background: white; padding: 20px; border-radius: 20px; max-width: 90%; max-height: 80vh; overflow: auto; }
+        #crop-target { max-width: 100%; }
+
+        .eye-selector { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
+        .eye-btn { font-size: 2rem; cursor: pointer; border: 2px solid #eee; padding: 5px; border-radius: 10px; }
+        .eye-btn.active { border-color: var(--teal-brand); }
+    </style>
 </head>
-<body>
+<body class="visible">
 
-<h1>MOSSARI TRAVEL TICKET</h1>
-
-<div class="main-container">
-  <div class="panel">
-    <div class="input-group">
-      <label>PASSENGER & DESTINATION</label>
-      <input type="text" id="i-dest" placeholder="NAME / TOKYO" oninput="draw()">
+<div id="intro-door" onclick="openDoor()">
+    <div class="door-leaf door-left"><div class="door-knob"></div></div>
+    <div class="door-leaf door-right">
+        <div class="door-knob"></div>
+        <div class="door-text">MOSSARI TRAVEL<br><span style="font-size: 0.6rem; opacity: 0.8;">TAP TO ENTER</span></div>
     </div>
-
-    <div class="input-group">
-      <label>TRANSPORT</label>
-      <select id="i-transport" onchange="draw()">
-        <option value="✈️">AIRPLANE (✈️)</option>
-        <option value="🚌">BUS (🚌)</option>
-        <option value="🚲">BICYCLE (🚲)</option>
-        <option value="🚢">SHIP (🚢)</option>
-        <option value="🚶">WALK (🚶)</option>
-        <option value="🛸">UFO (🛸)</option>
-      </select>
-    </div>
-
-    <div class="input-group">
-      <label>TRAVEL DATES</label>
-      <div style="display:flex; gap:8px;">
-        <input type="text" id="i-date-start" placeholder="2026.03.18" oninput="draw()">
-        <input type="text" id="i-date-end" placeholder="03.20" oninput="draw()">
-      </div>
-    </div>
-
-    <div class="input-group">
-      <label>MESSAGE</label>
-      <textarea id="i-msg" rows="2" oninput="draw()" placeholder="Have a nice trip!"></textarea>
-    </div>
-
-    <div class="input-group">
-      <label>CHARACTER (CUSTOM KOKE)</label>
-      <input type="file" id="koke-upload" accept="image/*" style="display:none" onchange="startCrop(event)">
-      <button class="btn btn-sub" onclick="document.getElementById('koke-upload').click()">写真をアップロードして作成</button>
-    </div>
-
-    <button class="btn btn-primary" onclick="saveHighRes()">💾 高画質画像を保存</button>
-    <button class="btn btn-sub" onclick="showQR()">🔗 QRコードを表示</button>
-  </div>
-
-  <div class="preview-area">
-    <canvas id="ticketCanvas"></canvas>
-    <p style="font-size: 0.6rem; color: #64748b; margin-top: 10px;">PREVIEW (Low Res)</p>
-  </div>
 </div>
 
-<div id="cropModal" class="modal">
-  <div class="modal-content">
-    <img id="cropTarget" style="max-width: 100%;">
-  </div>
-  <div style="display:flex; gap:10px; width: 100%; max-width: 400px;">
-    <button class="btn btn-primary" onclick="applyCrop()">切り抜き＆目玉追加</button>
-    <button class="btn btn-sub" onclick="closeModal('cropModal')">キャンセル</button>
-  </div>
+<div class="app-container">
+    <div class="sidebar">
+        <h2>TICKET CONFIG</h2>
+        
+        <div class="input-group">
+            <label>DESTINATION / PASSENGER</label>
+            <input type="text" id="i-dest" value="BOTANICAL GARDEN" oninput="draw()">
+        </div>
+
+        <div class="input-group">
+            <label>TRANSPORT</label>
+            <select id="i-transport" onchange="draw()">
+                <option value="✈️">AIRPLANE</option>
+                <option value="🚌">BUS</option>
+                <option value="🚲">BICYCLE</option>
+                <option value="🚢">SHIP</option>
+                <option value="🛸">UFO</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>DATES (RANGE)</label>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="i-date-start" value="2026.03.18" oninput="draw()">
+                <input type="text" id="i-date-end" value="03.20" oninput="draw()">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>TRAVEL PHOTOS (MAX 3)</label>
+            <div class="slot-container">
+                <div class="photo-slot" onclick="triggerUpload(0)" id="slot-0">+</div>
+                <div class="photo-slot" onclick="triggerUpload(1)" id="slot-1">+</div>
+                <div class="photo-slot" onclick="triggerUpload(2)" id="slot-2">+</div>
+            </div>
+            <input type="file" id="f-upload" hidden accept="image/*" onchange="handleFile(event)">
+        </div>
+
+        <div class="input-group">
+            <label>PET SELECTION</label>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <button class="btn btn-sub" style="flex:1" onclick="setPetMode('pixel')">Pixel Art</button>
+                <button class="btn btn-sub" style="flex:1" onclick="setPetMode('custom')">Custom Photo</button>
+            </div>
+            
+            <div id="pixel-ui" class="pixel-selector">
+                <div class="pixel-opt active" onclick="setPixel(0)">😊</div>
+                <div class="pixel-opt" onclick="setPixel(1)">😎</div>
+                <div class="pixel-opt" onclick="setPixel(2)">😴</div>
+                <div class="pixel-opt" onclick="setPixel(3)">😲</div>
+                <div class="pixel-opt" onclick="setPixel(4)">🥺</div>
+                <div class="pixel-opt" onclick="setPixel(5)">😡</div>
+                <div class="pixel-opt" onclick="setPixel(6)">😋</div>
+                <div class="pixel-opt" onclick="setPixel(7)">🤔</div>
+            </div>
+        </div>
+
+        <button class="btn btn-main" onclick="saveHQ()">HIGH-RES SAVE (PNG)</button>
+        <button class="btn btn-sub" onclick="shareSNS()">SHARE TO SNS</button>
+        <button class="btn btn-sub" style="font-size: 0.7rem;" onclick="showQR()">SHOW SITE QR</button>
+    </div>
+
+    <div class="preview-area">
+        <canvas id="ticketCanvas"></canvas>
+        <p style="font-size: 0.7rem; color: var(--teal-brand); margin-top: 15px; font-weight: bold; letter-spacing: 2px;">BOTANICAL × COMMERCIAL GRAPHIC</p>
+    </div>
+</div>
+
+<div id="editorModal" class="modal">
+    <div class="modal-content">
+        <div id="crop-wrapper" style="width: 400px; height: 400px;">
+            <img id="crop-target">
+        </div>
+        <div id="eye-editor-ui" style="display:none; text-align:center; margin-top:15px;">
+            <p style="font-size:0.8rem; font-weight:bold;">表情を選んでください</p>
+            <div class="eye-selector">
+                <div class="eye-btn active" onclick="setEyeStyle(0)">👀</div>
+                <div class="eye-btn" onclick="setEyeStyle(1)">✨</div>
+                <div class="eye-btn" onclick="setEyeStyle(2)">🕶️</div>
+                <div class="eye-btn" onclick="setEyeStyle(3)">🌸</div>
+            </div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button class="btn btn-main" id="btn-crop-next" onclick="nextEditorStep()">次へ</button>
+            <button class="btn btn-sub" onclick="closeModal('editorModal')">キャンセル</button>
+        </div>
+    </div>
 </div>
 
 <div id="qrModal" class="modal" onclick="closeModal('qrModal')">
-  <div id="qrcode"></div>
-  <p style="color: white; margin-top: 15px; font-size: 0.8rem;">tokoyami00.github.io/mossari/</p>
-  <p style="color: #64748b; margin-top: 5px;">タップして閉じる</p>
+    <div class="modal-content" style="text-align:center;">
+        <div id="qrcode"></div>
+        <p style="margin-top:10px; font-size:0.8rem; font-family:'Space Mono';">tokoyami00.github.io/mossari/</p>
+    </div>
 </div>
 
-<div id="toast" class="toast">Saved!</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
 <script>
-let cropper = null;
-let kokeImage = null; // Base64 of processed koke
-const BASE_W = 340;
-const BASE_H = 500;
+    let curSlot = 0;
+    let photos = [null, null, null];
+    let petMode = 'pixel'; // 'pixel' or 'custom'
+    let selPixelIdx = 0;
+    let customKokeImg = null;
+    let eyeStyle = 0;
+    let cropper = null;
+    let editorStep = 0; // 0: crop, 1: eyes
 
-window.onload = () => { draw(); };
+    const canvas = document.getElementById('ticketCanvas');
+    const ctx = canvas.getContext('2d');
+    const BASE_W = 400;
+    const BASE_H = 600;
 
-function draw(scale = 1) {
-  const canvas = document.getElementById('ticketCanvas');
-  const ctx = canvas.getContext('2d');
-  
-  canvas.width = BASE_W * scale;
-  canvas.height = BASE_H * scale;
-  ctx.scale(scale, scale);
+    function openDoor() {
+        document.getElementById('intro-door').classList.add('opened');
+    }
 
-  // 1. Background
-  ctx.fillStyle = '#fffbf0';
-  ctx.fillRect(0, 0, BASE_W, BASE_H);
+    function triggerUpload(idx) {
+        curSlot = idx;
+        document.getElementById('f-upload').click();
+    }
 
-  // 2. Decorative Border & Lines
-  ctx.strokeStyle = '#d4a843';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(10, 10, BASE_W - 20, BASE_H - 20);
-  
-  // Dotted Line
-  ctx.setLineDash([4, 4]);
-  ctx.beginPath();
-  ctx.moveTo(10, 380); ctx.lineTo(330, 380);
-  ctx.stroke();
-  ctx.setLineDash([]);
+    function handleFile(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = document.getElementById('crop-target');
+            img.src = ev.target.result;
+            openEditor();
+        };
+        reader.readAsDataURL(file);
+    }
 
-  // 3. Header
-  ctx.fillStyle = '#1a1a2e';
-  ctx.font = "bold 20px 'Space Mono'";
-  ctx.textAlign = 'center';
-  const dest = document.getElementById('i-dest').value || 'PASSENGER / TOKYO';
-  ctx.fillText(dest.toUpperCase(), BASE_W/2, 50);
+    function openEditor() {
+        document.getElementById('editorModal').style.display = 'flex';
+        document.getElementById('crop-wrapper').style.display = 'block';
+        document.getElementById('eye-editor-ui').style.display = 'none';
+        document.getElementById('btn-crop-next').innerText = "切り抜き確定";
+        editorStep = 0;
+        if(cropper) cropper.destroy();
+        setTimeout(() => {
+            cropper = new Cropper(document.getElementById('crop-target'), { aspectRatio: 1, viewMode: 1 });
+        }, 100);
+    }
 
-  // 4. Transport Icon
-  const transport = document.getElementById('i-transport').value;
-  ctx.font = "48px serif";
-  ctx.fillText(transport, BASE_W/2, 115);
+    function nextEditorStep() {
+        if(editorStep === 0) {
+            // After cropping
+            editorStep = 1;
+            document.getElementById('crop-wrapper').style.display = 'none';
+            document.getElementById('eye-editor-ui').style.display = 'block';
+            document.getElementById('btn-crop-next').innerText = "コケを登録";
+        } else {
+            // Finish
+            const croppedCvs = cropper.getCroppedCanvas({width: 300, height: 300});
+            applyEyesToCanvas(croppedCvs);
+            const finalData = croppedCvs.toDataURL();
+            
+            // If we're editing for the travel slots
+            photos[curSlot] = finalData;
+            document.getElementById(`slot-${curSlot}`).innerHTML = `<img src="${finalData}">`;
+            
+            // Also set as custom pet
+            customKokeImg = finalData;
+            
+            closeModal('editorModal');
+            draw();
+        }
+    }
 
-  // 5. Date Range
-  const dStart = document.getElementById('i-date-start').value || '2026.03.18';
-  const dEnd = document.getElementById('i-date-end').value || '03.20';
-  ctx.fillStyle = '#d4a843';
-  ctx.font = "bold 14px 'Space Mono'";
-  ctx.fillText(`${dStart} >> ${dEnd}`, BASE_W/2, 155);
+    function applyEyesToCanvas(cvs) {
+        const c = cvs.getContext('2d');
+        const eyes = ["👀", "✨", "🕶️", "🌸"];
+        c.font = "60px serif";
+        c.textAlign = "center";
+        c.fillText(eyes[eyeStyle], 150, 160);
+    }
 
-  // 6. Character Area
-  if (kokeImage) {
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, BASE_W/2 - 70, 185, 140, 140);
-    };
-    img.src = kokeImage;
-  } else {
-    // Default placeholder circle
-    ctx.fillStyle = '#e2e8f0';
-    ctx.beginPath(); ctx.arc(BASE_W/2, 255, 60, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = "8px 'Press Start 2P'";
-    ctx.fillText("NO KOKE", BASE_W/2, 260);
-  }
+    function draw(scale = 1) {
+        canvas.width = BASE_W * scale;
+        canvas.height = BASE_H * scale;
+        ctx.scale(scale, scale);
 
-  // 7. Footer Message
-  ctx.fillStyle = '#1a1a2e';
-  ctx.font = "italic 20px 'Caveat'";
-  const msg = document.getElementById('i-msg').value || 'Have a nice mossari trip!';
-  ctx.fillText(msg, BASE_W/2, 430);
+        // 1. BG & Botanical Border
+        ctx.fillStyle = 'var(--ticket-bg)';
+        ctx.fillRect(0,0,BASE_W, BASE_H);
+        
+        ctx.strokeStyle = 'var(--teal-brand)';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(15, 15, BASE_W-30, BASE_H-30);
 
-  // 8. Punched Hole Style
-  ctx.fillStyle = '#1a1a2e';
-  ctx.beginPath(); ctx.arc(10, 380, 8, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(330, 380, 8, 0, Math.PI*2); ctx.fill();
-}
+        // Decorative Corners
+        ctx.font = "20px serif";
+        ctx.fillText("🌿", 35, 45); ctx.fillText("🌿", BASE_W-35, 45);
+        ctx.fillText("🌿", 35, BASE_H-30); ctx.fillText("🌿", BASE_W-35, BASE_H-30);
 
-/* Cropper Logic */
-function startCrop(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    const img = document.getElementById('cropTarget');
-    img.src = event.target.result;
-    document.getElementById('cropModal').style.display = 'flex';
-    if (cropper) cropper.destroy();
-    cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1 });
-  };
-  reader.readAsDataURL(file);
-}
+        // 2. Header
+        ctx.fillStyle = 'var(--teal-brand)';
+        ctx.font = "bold 24px 'Space Mono'";
+        ctx.textAlign = 'center';
+        ctx.fillText(document.getElementById('i-dest').value.toUpperCase(), BASE_W/2, 80);
 
-function applyCrop() {
-  const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
-  const ctx = canvas.getContext('2d');
-  
-  // 目玉の描画 (MOSSARI Style)
-  const drawEye = (x, y) => {
-    ctx.fillStyle = 'white';
-    ctx.beginPath(); ctx.ellipse(x, y, 22, 28, 0, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.stroke();
-    ctx.fillStyle = 'black';
-    ctx.beginPath(); ctx.arc(x, y + 5, 10, 0, Math.PI*2); ctx.fill();
-  };
-  
-  drawEye(200 - 60, 180); // 左
-  drawEye(200 + 60, 180); // 右
-  
-  kokeImage = canvas.toDataURL();
-  closeModal('cropModal');
-  draw();
-}
+        // 3. Transport Icon
+        ctx.font = "50px serif";
+        ctx.fillText(document.getElementById('i-transport').value, BASE_W/2, 140);
 
-/* Save & QR Logic */
-function saveHighRes() {
-  draw(3); // 3倍サイズで再描画
-  setTimeout(() => {
-    const link = document.createElement('a');
-    link.download = 'mossari-travel-hq.png';
-    link.href = document.getElementById('ticketCanvas').toDataURL('image/png');
-    link.click();
-    draw(1); // プレビュー用に戻す
-    showToast("SUCCESS: HQ IMAGE SAVED");
-  }, 200);
-}
+        // 4. Photos Layout
+        const activePhotos = photos.filter(p => p !== null);
+        const pY = 180;
+        const pSize = 100;
+        if(activePhotos.length === 1) {
+            drawImg(activePhotos[0], BASE_W/2 - 75, pY, 150, 150);
+        } else if(activePhotos.length === 2) {
+            drawImg(activePhotos[0], BASE_W/2 - 110, pY, 100, 100);
+            drawImg(activePhotos[1], BASE_W/2 + 10, pY, 100, 100);
+        } else if(activePhotos.length === 3) {
+            drawImg(activePhotos[0], BASE_W/2 - 140, pY, 80, 80);
+            drawImg(activePhotos[1], BASE_W/2 - 40, pY, 80, 80);
+            drawImg(activePhotos[2], BASE_W/2 + 60, pY, 80, 80);
+        }
 
-function showQR() {
-  const qrContainer = document.getElementById('qrcode');
-  qrContainer.innerHTML = "";
-  new QRCode(qrContainer, {
-    text: "https://tokoyami00.github.io/mossari/",
-    width: 160, height: 160
-  });
-  document.getElementById('qrModal').style.display = 'flex';
-}
+        // 5. Pet Section
+        const petY = 380;
+        if(petMode === 'pixel') {
+            const pixels = ["😊","😎","😴","😲","🥺","😡","😋","🤔"];
+            ctx.font = "80px serif";
+            ctx.fillText(pixels[selPixelIdx], BASE_W/2, petY + 40);
+            ctx.font = "bold 10px 'Press Start 2P'";
+            ctx.fillText("PIXEL KOKE", BASE_W/2, petY + 70);
+        } else if(customKokeImg) {
+            drawImg(customKokeImg, BASE_W/2 - 60, petY - 20, 120, 120);
+        }
 
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        // 6. Dates & Message
+        ctx.fillStyle = 'var(--ink)';
+        ctx.font = "bold 14px 'Space Mono'";
+        const dStr = `${document.getElementById('i-date-start').value} >> ${document.getElementById('i-date-end').value}`;
+        ctx.fillText(dStr, BASE_W/2, 500);
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.innerText = msg; t.style.display = 'block';
-  setTimeout(() => { t.style.display = 'none'; }, 2000);
-}
+        ctx.font = "24px 'Caveat'";
+        ctx.fillText("Have a lovely mossari trip!", BASE_W/2, 540);
+
+        // Punch Holes
+        ctx.fillStyle = 'var(--teal-light)';
+        ctx.beginPath(); ctx.arc(15, 470, 10, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(BASE_W-15, 470, 10, 0, Math.PI*2); ctx.fill();
+    }
+
+    function drawImg(src, x, y, w, h) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, x, y, w, h);
+        img.src = src;
+    }
+
+    function setPetMode(m) { 
+        petMode = m; 
+        document.getElementById('pixel-ui').style.display = (m === 'pixel' ? 'grid' : 'none');
+        draw(); 
+    }
+    function setPixel(idx) { 
+        selPixelIdx = idx; 
+        document.querySelectorAll('.pixel-opt').forEach((el, i) => el.classList.toggle('active', i === idx));
+        draw(); 
+    }
+    function setEyeStyle(idx) {
+        eyeStyle = idx;
+        document.querySelectorAll('.eye-btn').forEach((el, i) => el.classList.toggle('active', i === idx));
+    }
+
+    function saveHQ() {
+        draw(3);
+        setTimeout(() => {
+            const a = document.createElement('a');
+            a.download = 'mossari-ticket-hq.png';
+            a.href = canvas.toDataURL();
+            a.click();
+            draw(1);
+        }, 300);
+    }
+
+    function shareSNS() {
+        const text = encodeURIComponent("MOSSARI TRAVELで航空券を作ったよ！ #もっさりトラベル #BotanyArt");
+        window.open(`https://twitter.com/intent/tweet?text=${text}`);
+    }
+
+    function showQR() {
+        const qrDiv = document.getElementById('qrcode');
+        qrDiv.innerHTML = "";
+        new QRCode(qrDiv, { text: "https://tokoyami00.github.io/mossari/", width: 150, height: 150 });
+        document.getElementById('qrModal').style.display = 'flex';
+    }
+
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    window.onload = () => { draw(); };
 </script>
+
 </body>
 </html>
