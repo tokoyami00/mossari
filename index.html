@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
 <title>もっさりトラベル</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Press+Start+2P&family=Shippori+Mincho:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Press+Start+2P&family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -14,9 +14,9 @@
   --terra:#C86040;--terraL:#E08060;--terraD:#A04020;
   --line:3px solid #1A1A1A;
   --sh:4px 4px 0 #1A1A1A;
-  --fj:'Noto Sans JP',sans-serif;
+  --fj:'M PLUS Rounded 1c',sans-serif;
   --fp:'Press Start 2P',monospace;
-  --fm:'Shippori Mincho',serif;
+  --fm:'Zen Maru Gothic',sans-serif;
 }
 html{scroll-behavior:smooth;overflow-x:hidden;}
 body{font-family:var(--fj);background:var(--off);color:var(--ink);overflow-x:hidden;}
@@ -267,8 +267,7 @@ nav{
 .pt-code{font-family:var(--fp);font-size:11px;color:var(--ink);display:block;margin-bottom:2px;}
 .pt-cname{font-family:var(--fm);font-size:13px;font-weight:700;color:var(--ink2);}
 .pt-arr{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:3px;}
-.pt-arrline{width:50px;height:2px;background:var(--ink);position:relative;}
-.pt-arrline::after{content:'✈';position:absolute;top:-10px;right:-4px;font-size:14px;color:var(--ink);}
+.pt-arrline{width:50px;height:2px;background:var(--ink);position:relative;overflow:visible;}
 .pt-vrow{display:flex;gap:3px;flex-wrap:wrap;}
 .pt-chip{background:var(--mintLL);border:1.5px solid var(--ink);padding:1px 6px;font-size:8px;font-weight:900;}
 .pt-photos{display:grid;gap:3px;margin-bottom:8px;}
@@ -324,8 +323,7 @@ nav{
 .bp-code{font-family:var(--fp);font-size:13px;color:var(--ink);display:block;margin-bottom:2px;}
 .bp-cname{font-family:var(--fm);font-size:14px;font-weight:700;color:var(--ink2);}
 .bp-arr{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:3px;}
-.bp-aline{width:55px;height:2px;background:var(--ink);position:relative;}
-.bp-aline::after{content:'✈';position:absolute;top:-10px;right:-4px;font-size:15px;color:var(--ink);}
+.bp-aline{width:55px;height:2px;background:var(--ink);position:relative;overflow:visible;}
 .bp-vrow{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;}
 .bp-chip{background:var(--mintLL);border:2px solid var(--ink);padding:2px 7px;font-size:8px;font-weight:900;}
 .bp-photos{padding:0 14px 10px;display:grid;gap:4px;}
@@ -508,26 +506,40 @@ nav{
         </div>
         <input type="file" id="cu-file" accept="image/*" style="display:none">
         <div id="eye-area" style="display:none;">
-          <div class="eye-row">
-            <button class="et a" id="et-add" onclick="setTool('add')">👁 追加</button>
-            <button class="et" id="et-move" onclick="setTool('move')">✋ 移動</button>
-            <button class="et" id="et-del" onclick="setTool('del')">🗑 消す</button>
-            <button class="et" onclick="eyeList=[];redrawEye()">全消し</button>
+            <!-- 新方式：目玉リスト + スライダーで位置調整 -->
+            <div style="margin-bottom:10px;">
+              <div style="font-size:11px;font-weight:700;color:var(--ink3);margin-bottom:8px;">👁 目玉を追加して位置を調整しよう</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+                <button class="ec a" id="ec-bk" onclick="setEyeCol('black',this)">⬛ 黒</button>
+                <button class="ec" id="ec-wh" onclick="setEyeCol('white',this)">⬜ 白</button>
+                <button class="ec" id="ec-rd" onclick="setEyeCol('red',this)">🟥 赤</button>
+                <button class="ec" id="ec-bl" onclick="setEyeCol('blue',this)">🟦 青</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:11px;font-weight:700;">
+                <span>サイズ:</span>
+                <input type="range" id="eye-sz" min="2" max="8" value="4" oninput="redrawEye()" style="flex:1;accent-color:var(--ink);">
+                <span id="eye-sz-v">4px</span>
+              </div>
+              <button class="btn btn-black btn-sm" onclick="addEyeCenter()" style="margin-bottom:8px;">👁 目玉を追加する</button>
+            </div>
+            <!-- 目玉リスト（選択＆スライダー調整） -->
+            <div id="eye-list-ui" style="margin-bottom:10px;display:none;">
+              <div style="font-size:10px;font-weight:700;color:var(--ink3);margin-bottom:6px;">選択した目玉の位置を調整：</div>
+              <div id="eye-sel-display" style="background:var(--mintLL);border:2px solid var(--ink);padding:8px 10px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+                <span style="font-size:20px;">👁</span>
+                <span id="eye-sel-label" style="font-size:11px;font-weight:700;">目玉 1</span>
+                <button onclick="deleteSelEye()" style="margin-left:auto;background:var(--terra);border:2px solid var(--ink);color:#fff;font-size:10px;font-weight:900;padding:3px 8px;cursor:pointer;">削除</button>
+              </div>
+              <div style="font-size:10px;font-weight:700;margin-bottom:4px;">← 左右 →</div>
+              <input type="range" id="eye-x-slider" min="0" max="100" value="50" oninput="moveSelEye()" style="width:100%;accent-color:var(--mintD);margin-bottom:8px;">
+              <div style="font-size:10px;font-weight:700;margin-bottom:4px;">↑ 上下 ↓</div>
+              <input type="range" id="eye-y-slider" min="0" max="100" value="50" oninput="moveSelEye()" style="width:100%;accent-color:var(--mintD);margin-bottom:8px;">
+            </div>
+            <!-- 目玉サムネイル一覧 -->
+            <div id="eye-thumb-list" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;"></div>
+            <canvas id="eye-cv" style="width:100%;max-width:300px;display:block;margin:0 auto;border:var(--line);image-rendering:pixelated;"></canvas>
+            <button class="btn btn-mint btn-sm" style="margin-top:10px;" onclick="confirmCu()">このコケに決める ✓</button>
           </div>
-          <div class="eye-sz-row">
-            <span>大きさ:</span>
-            <input type="range" id="eye-sz" min="2" max="8" value="4" oninput="redrawEye()">
-            <span id="eye-sz-v">4px</span>
-          </div>
-          <div class="ec-row">
-            <button class="ec a" id="ec-bk" onclick="setEyeCol('black',this)">⬛ 黒</button>
-            <button class="ec" id="ec-wh" onclick="setEyeCol('white',this)">⬜ 白</button>
-            <button class="ec" id="ec-rd" onclick="setEyeCol('red',this)">🟥 赤</button>
-            <button class="ec" id="ec-bl" onclick="setEyeCol('blue',this)">🟦 青</button>
-          </div>
-          <canvas id="eye-cv"></canvas>
-          <button class="btn btn-mint btn-sm" style="margin-top:10px;" onclick="confirmCu()">このコケに決める ✓</button>
-        </div>
       </div>
     </div>
     <!-- 選択中ペット表示 -->
@@ -550,6 +562,11 @@ nav{
       <div class="sec-tag">STEP 02 — ROUTE</div>
       <h2 class="pet-headline">旅のルートを<br>記録しよう</h2>
     </div>
+    <!-- 乗り物アイコン選択 -->
+    <div style="margin-bottom:20px;">
+      <div class="via-lbl">TRANSPORT — 乗り物</div>
+      <div id="transport-grid" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+    </div>
     <!-- ルートビジュアル -->
     <div class="route-visual">
       <div class="rv-from">
@@ -557,7 +574,7 @@ nav{
         <input class="rv-inp" id="from-i" placeholder="東京" maxlength="20" oninput="syncPreview()">
       </div>
       <div class="rv-mid">
-        <div class="rv-plane">✈</div>
+        <div class="rv-plane" id="rv-transport">✈</div>
         <div class="rv-plane-label">VIA</div>
       </div>
       <div class="rv-to">
@@ -635,7 +652,7 @@ nav{
         <div class="pt-row"><span class="pt-airline">MOSSARI AIR</span><span class="pt-fno" id="pt-fno">FL-0000</span></div>
         <div class="pt-route">
           <div class="pt-city"><span class="pt-code" id="pt-fc">---</span><span class="pt-cname" id="pt-fn">出発地</span></div>
-          <div class="pt-arr"><div class="pt-arrline"></div><div class="pt-vrow" id="pt-via"></div></div>
+          <div class="pt-arr"><div class="pt-arrline" id="pt-transport-arrow" style="position:relative;"></div><div class="pt-vrow" id="pt-via"></div></div>
           <div class="pt-city" style="text-align:right;"><span class="pt-code" id="pt-tc" style="display:block;text-align:right;">---</span><span class="pt-cname" id="pt-tn" style="display:block;text-align:right;">目的地</span></div>
         </div>
         <div class="pt-photos" id="pt-photos"></div>
@@ -662,6 +679,11 @@ nav{
       <span>🎫</span>
       <span>ISSUE BOARDING PASS</span>
     </button>
+    <div style="margin-top:20px;">
+      <button onclick="showQR()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:transparent;color:var(--mint);border:2px solid var(--mint);font-family:var(--fp);font-size:7px;letter-spacing:1.5px;cursor:pointer;transition:all .12s;box-shadow:3px 3px 0 var(--mintD);" onmouseover="this.style.transform='translate(-2px,-2px)';this.style.boxShadow='5px 5px 0 var(--mintD)'" onmouseout="this.style.transform='';this.style.boxShadow='3px 3px 0 var(--mintD)'">
+        <span>📱</span><span>QRコードで共有</span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -676,7 +698,10 @@ nav{
         <div class="bp-ar"><span class="bp-airline">MOSSARI AIR</span><span class="bp-fno" id="bp-fno">FL-0000</span></div>
         <div class="bp-route">
           <div class="bp-city"><span class="bp-code" id="bp-fc">---</span><span class="bp-cname" id="bp-fn">出発地</span></div>
-          <div class="bp-arr"><div class="bp-aline"></div><div class="bp-vrow" id="bp-via"></div></div>
+          <div class="bp-arr">
+            <div class="bp-aline" id="bp-transport-arrow"></div>
+            <div class="bp-vrow" id="bp-via"></div>
+          </div>
           <div class="bp-city" style="text-align:right;"><span class="bp-code" id="bp-tc" style="display:block;text-align:right;">---</span><span class="bp-cname" id="bp-tn" style="display:block;text-align:right;">目的地</span></div>
         </div>
       </div>
@@ -706,6 +731,20 @@ nav{
   </div>
 </div>
 
+<!-- QR MODAL -->
+<div id="qr-modal" style="position:fixed;inset:0;z-index:900;background:rgba(26,26,26,.92);display:none;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:var(--off);border:var(--line);box-shadow:6px 6px 0 var(--mint);padding:28px 24px;max-width:340px;width:100%;text-align:center;">
+    <div style="font-family:var(--fp);font-size:8px;color:var(--ink);letter-spacing:1px;margin-bottom:6px;">📱 QR CODE</div>
+    <div style="font-family:var(--fm);font-size:13px;color:var(--ink3);margin-bottom:20px;">このQRコードをシェアしてね！</div>
+    <div id="qr-container" style="display:inline-block;padding:16px;background:#fff;border:var(--line);margin-bottom:16px;"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--ink3);word-break:break-all;margin-bottom:16px;padding:8px;background:var(--off2);border:1px solid var(--off3);" id="qr-url-display"></div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="btn btn-black btn-sm" onclick="downloadQR()">💾 QRを画像保存</button>
+      <button class="btn btn-off btn-sm" onclick="document.getElementById('qr-modal').style.display='none'">閉じる</button>
+    </div>
+  </div>
+</div>
+
 <!-- TRIM MODAL -->
 <div class="modal-bg" id="trim-modal">
   <div class="trim-box">
@@ -724,6 +763,7 @@ nav{
 
 <input type="file" id="photo-file" accept="image/*" multiple style="display:none">
 <div class="toast" id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
 // ══════════════════════════
@@ -764,17 +804,181 @@ function drawPKoke(ctx,W,H,def){
   else{ctx.fillStyle=EK;ctx.fillRect(ox+8*G,oy+14*G,G,G);ctx.fillRect(ox+9*G,oy+13*G,G*2,G);ctx.fillRect(ox+11*G,oy+14*G,G,G);}
 }
 
-// ══ EYE EDITOR ══
-var eyeList=[],eyeTool='add',eyeColMode='black',eyePxSz=4,eyeEdImg=null,eyeEdCV=null,selEI=-1,dragE=false,dragEDX=0,dragEDY=0;
-function setTool(t){eyeTool=t;['add','move','del'].forEach(function(k){var el=document.getElementById('et-'+k);if(el)el.classList.toggle('a',k===t);});}
-function setEyeCol(c,btn){eyeColMode=c;document.querySelectorAll('.ec').forEach(function(b){b.classList.remove('a');});btn.classList.add('a');}
-function initEyeEd(file){var r=new FileReader();r.onload=function(ev){var img=new Image();img.onload=function(){eyeEdImg=img;document.getElementById('eye-area').style.display='block';var cv=document.getElementById('eye-cv');eyeEdCV=cv;var mW=Math.min(window.innerWidth-60,280);var sc=mW/img.width;cv.width=Math.round(img.width*sc);cv.height=Math.round(img.height*sc);eyeList=[];redrawEye();setupEyeEv(cv);};img.src=ev.target.result;};r.readAsDataURL(file);}
-function redrawEye(){if(!eyeEdCV)return;var cv=eyeEdCV,ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);for(var y=0;y<cv.height;y+=16)for(var x=0;x<cv.width;x+=16){ctx.fillStyle=(x+y)/16%2===0?'#e8e0d0':'#f8f0e0';ctx.fillRect(x,y,16,16);}if(eyeEdImg)ctx.drawImage(eyeEdImg,0,0,cv.width,cv.height);var S=parseInt(document.getElementById('eye-sz').value)||4;document.getElementById('eye-sz-v').textContent=S+'px';eyePxSz=S;eyeList.forEach(function(e,i){drawEye1(ctx,e.x,e.y,e.sz||S,e.col||'black',i===selEI);});}
-function drawEye1(ctx,x,y,S,col,sel){var EK=col==='black'?'#000':col==='white'?'#f8f8f8':col==='red'?'#e00020':'#0020e0';ctx.fillStyle='#fff';ctx.fillRect(x+S,y,S*3,S);ctx.fillRect(x,y+S,S*5,S*3);ctx.fillRect(x+S,y+4*S,S*3,S);ctx.fillStyle=EK;ctx.fillRect(x+S,y+S,S*3,S*3);ctx.fillStyle='#fff';ctx.fillRect(x+S,y+S,S,S);if(sel){ctx.strokeStyle='#C86040';ctx.lineWidth=1.5;ctx.strokeRect(x-1,y-1,S*5+2,S*5+2);}}
-function setupEyeEv(cv){function gp(e){var r=cv.getBoundingClientRect();var cl=e.touches?e.touches[0].clientX:e.clientX;var ct=e.touches?e.touches[0].clientY:e.clientY;return{x:Math.round(cl-r.left),y:Math.round(ct-r.top)};}function dn(e){if(e.cancelable)e.preventDefault();var p=gp(e),S=eyePxSz;if(eyeTool==='add'){eyeList.push({x:p.x-S*2,y:p.y-S*2,sz:S,col:eyeColMode});redrawEye();}else if(eyeTool==='move'){var bi=-1,bd=Infinity;eyeList.forEach(function(e,i){var d=Math.hypot(p.x-e.x-e.sz*2,p.y-e.y-e.sz*2);if(d<bd&&d<40){bd=d;bi=i;}});if(bi>=0){selEI=bi;dragE=true;dragEDX=p.x-eyeList[bi].x;dragEDY=p.y-eyeList[bi].y;redrawEye();}}else if(eyeTool==='del'){for(var i=eyeList.length-1;i>=0;i--){var e=eyeList[i];if(p.x>=e.x&&p.x<=e.x+e.sz*5&&p.y>=e.y&&p.y<=e.y+e.sz*5){eyeList.splice(i,1);redrawEye();break;}}}}function mv(e){if(e.cancelable)e.preventDefault();if(dragE&&selEI>=0){var p=gp(e);eyeList[selEI].x=p.x-dragEDX;eyeList[selEI].y=p.y-dragEDY;redrawEye();}}function up(){dragE=false;}cv.addEventListener('mousedown',dn);cv.addEventListener('touchstart',dn,{passive:false});cv.addEventListener('mousemove',mv);cv.addEventListener('touchmove',mv,{passive:false});cv.addEventListener('mouseup',up);cv.addEventListener('touchend',up);}
+// ══ TRANSPORT ICONS ══
+var TRANSPORTS = [
+  {id:'plane',   label:'飛行機', svg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>'},
+  {id:'bike',    label:'自転車', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="15" r="4"/><circle cx="18" cy="15" r="4"/><path d="M6 15l4-8h4l2 8M10 7h4"/><path d="M14 7l2 8"/></svg>'},
+  {id:'car',     label:'車',     svg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM19 17H5v-5h14v5z"/><circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/></svg>'},
+  {id:'ship',    label:'船',     svg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 21c-1.39 0-2.78-.47-4-1.32-2.44 1.71-5.56 1.71-8 0C6.78 20.53 5.39 21 4 21H2v2h2c1.38 0 2.74-.35 4-.99 2.52 1.29 5.48 1.29 8 0 1.26.65 2.62.99 4 .99h2v-2h-2zM3.95 19H4c1.6 0 3.02-.88 4-2 .98 1.12 2.4 2 4 2s3.02-.88 4-2c.98 1.12 2.4 2 4 2h.05l1.89-6.68c.08-.26.06-.54-.06-.78s-.34-.42-.6-.5L20 11V6c0-1.1-.9-2-2-2h-3V1H9v3H6c-1.1 0-2 .9-2 2v5l-1.29.42c-.26.08-.48.26-.6.5s-.15.52-.06.78L3.95 19zM6 6h12v4.96l-6-1.96-6 1.96V6z"/></svg>'},
+  {id:'train',   label:'電車',   svg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-4 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h2.23l2-2H14l2 2H18v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-3.58-4-8-4zM7.5 17c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm3.5-7H6V6h5v4zm5.5 7c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM18 10h-5V6h5v4z"/></svg>'},
+  {id:'scooter', label:'バイク', svg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 7c0-1.1-.9-2-2-2h-3l2 4H5.5C4.12 9 3 10.12 3 11.5S4.12 14 5.5 14H6c0 1.66 1.34 3 3 3s3-1.34 3-3h2c0 1.66 1.34 3 3 3s3-1.34 3-3h1v-3l-2-4zm-10 5c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm8 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>'},
+  {id:'heli',    label:'ヘリ',   svg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 9h-5.17l-1.24-2.47A1.997 1.997 0 0014 5.5c0-1.1.9-2 2-2s2 .9 2 2H20c0-2.21-1.79-4-4-4s-4 1.79-4 4c0 .34.05.67.13.98L7.58 9H2v2h2.5l-.63 2.5c-.36.05-.7.14-1.01.28L1.5 15c-.83.42-1.5 1.22-1.5 2.11V19h2v-1.89c0-.35.19-.68.5-.85l.86-.43c.51-.25 1.09-.33 1.64-.23l.33.06c1.15.21 2.31-.16 3.12-.99L9 14.5V19h2v-7.62l2.81-2.81c.36.27.79.43 1.25.43H22V9zm-13 3.55l-.92.92c-.5.5-1.2.72-1.9.59l-.33-.06a4.05 4.05 0 00-1.52.09L5.5 11H9v1.55z"/></svg>'},
+  {id:'walk',    label:'徒歩',   svg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg>'},
+];
+var selTransport = 'plane';
+function buildTransportGrid(){
+  var g=document.getElementById('transport-grid');if(!g)return;g.innerHTML='';
+  TRANSPORTS.forEach(function(t){
+    var isSel=t.id===selTransport;
+    var btn=document.createElement('button');
+    btn.style.cssText='padding:8px 10px;border:2px solid var(--ink);background:'+(isSel?'var(--ink)':'var(--off)')+';cursor:pointer;transition:all .12s;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:52px;box-shadow:'+(isSel?'3px 3px 0 var(--mintD)':'none')+';';
+    var iconDiv=document.createElement('div');
+    iconDiv.style.cssText='width:28px;height:28px;color:'+(isSel?'var(--mint)':'var(--ink)')+';flex-shrink:0;';
+    iconDiv.innerHTML=t.svg;
+    var lbl=document.createElement('span');
+    lbl.textContent=t.label;
+    lbl.style.cssText='font-size:8px;font-weight:700;color:'+(isSel?'var(--mint)':'var(--ink3)')+';font-family:var(--fm);white-space:nowrap;';
+    btn.appendChild(iconDiv);btn.appendChild(lbl);
+    (function(tr){btn.onclick=function(){selTransport=tr.id;buildTransportGrid();syncPreview();};})(t);
+    g.appendChild(btn);
+  });
+}
+function getTransportSVG(){
+  var t=TRANSPORTS.find(function(x){return x.id===selTransport;});
+  return t?t.svg:TRANSPORTS[0].svg;
+}
+function updateTransportArrows(){
+  var svg=getTransportSVG();
+  var iconHTML='<span style="position:absolute;top:-14px;right:-6px;width:20px;height:20px;display:block;color:var(--ink);">'+svg+'</span>';
+  var pta=document.getElementById('pt-transport-arrow');
+  if(pta){pta.style.cssText='width:50px;height:2px;background:var(--ink);position:relative;overflow:visible;';pta.innerHTML=iconHTML;}
+  var bpa=document.getElementById('bp-transport-arrow');
+  if(bpa){bpa.style.cssText='width:55px;height:2px;background:var(--ink);position:relative;overflow:visible;';bpa.innerHTML=iconHTML;}
+  var rv=document.getElementById('rv-transport');
+  if(rv){rv.style.cssText='font-size:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--ink);';rv.innerHTML=svg;}
+}
+
+// ══ EYE EDITOR (新方式：スライダー調整) ══
+var eyeList=[],eyeColMode='black',eyeEdImg=null,eyeEdCV=null,selEI=0;
+
+function setEyeCol(c,btn){
+  eyeColMode=c;
+  document.querySelectorAll('.ec').forEach(function(b){b.classList.remove('a');});
+  btn.classList.add('a');
+}
+
+function initEyeEd(file){
+  var r=new FileReader();
+  r.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      eyeEdImg=img;
+      document.getElementById('eye-area').style.display='block';
+      var cv=document.getElementById('eye-cv');
+      eyeEdCV=cv;
+      var mW=Math.min(window.innerWidth-60,280);
+      var sc=mW/img.width;
+      cv.width=Math.round(img.width*sc);
+      cv.height=Math.round(img.height*sc);
+      eyeList=[];
+      selEI=0;
+      redrawEye();
+      renderEyeThumbList();
+    };
+    img.src=ev.target.result;
+  };
+  r.readAsDataURL(file);
+}
+
+function addEyeCenter(){
+  var S=parseInt(document.getElementById('eye-sz').value)||4;
+  var cv=eyeEdCV;if(!cv)return;
+  // 中央に追加、xpct/ypct は 0〜100% で管理
+  eyeList.push({xpct:50,ypct:50,sz:S,col:eyeColMode});
+  selEI=eyeList.length-1;
+  updateSlidersFromSel();
+  redrawEye();
+  renderEyeThumbList();
+  document.getElementById('eye-list-ui').style.display='block';
+}
+
+function deleteSelEye(){
+  if(eyeList.length===0)return;
+  eyeList.splice(selEI,1);
+  selEI=Math.max(0,selEI-1);
+  if(eyeList.length===0)document.getElementById('eye-list-ui').style.display='none';
+  else updateSlidersFromSel();
+  redrawEye();
+  renderEyeThumbList();
+}
+
+function selectEye(i){
+  selEI=i;
+  updateSlidersFromSel();
+  redrawEye();
+  renderEyeThumbList();
+  document.getElementById('eye-list-ui').style.display='block';
+}
+
+function updateSlidersFromSel(){
+  if(eyeList.length===0)return;
+  var e=eyeList[selEI];
+  document.getElementById('eye-x-slider').value=e.xpct;
+  document.getElementById('eye-y-slider').value=e.ypct;
+  document.getElementById('eye-sel-label').textContent='目玉 '+(selEI+1);
+}
+
+function moveSelEye(){
+  if(eyeList.length===0)return;
+  eyeList[selEI].xpct=parseInt(document.getElementById('eye-x-slider').value);
+  eyeList[selEI].ypct=parseInt(document.getElementById('eye-y-slider').value);
+  redrawEye();
+}
+
+function renderEyeThumbList(){
+  var ul=document.getElementById('eye-thumb-list');if(!ul)return;
+  ul.innerHTML='';
+  eyeList.forEach(function(e,i){
+    var btn=document.createElement('button');
+    btn.style.cssText='padding:6px 10px;border:2px solid '+(i===selEI?'var(--terra)':'var(--ink)')+';background:'+(i===selEI?'var(--terra-ll)':'var(--off)')+';cursor:pointer;font-size:9px;font-weight:700;transition:all .12s;display:flex;align-items:center;gap:4px;';
+    btn.innerHTML='<span style="font-size:14px;">👁</span><span style="font-family:var(--fm);">目玉'+(i+1)+'</span>';
+    (function(idx){btn.onclick=function(){selectEye(idx);};})(i);
+    ul.appendChild(btn);
+  });
+}
+
+function pctToCanvas(xpct,ypct,S){
+  if(!eyeEdCV)return{x:0,y:0};
+  var cv=eyeEdCV;
+  var x=Math.round((xpct/100)*(cv.width-S*5));
+  var y=Math.round((ypct/100)*(cv.height-S*5));
+  return{x:x,y:y};
+}
+
+function redrawEye(){
+  if(!eyeEdCV)return;
+  var cv=eyeEdCV,ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+  // チェッカー背景
+  for(var y=0;y<cv.height;y+=16)for(var x=0;x<cv.width;x+=16){ctx.fillStyle=(x+y)/16%2===0?'#e8e0d0':'#f8f0e0';ctx.fillRect(x,y,16,16);}
+  if(eyeEdImg)ctx.drawImage(eyeEdImg,0,0,cv.width,cv.height);
+  var S=parseInt(document.getElementById('eye-sz').value)||4;
+  document.getElementById('eye-sz-v').textContent=S+'px';
+  eyeList.forEach(function(e,i){
+    var pos=pctToCanvas(e.xpct,e.ypct,e.sz||S);
+    drawEye1(ctx,pos.x,pos.y,e.sz||S,e.col||'black',i===selEI);
+  });
+}
+
+function drawEye1(ctx,x,y,S,col,sel){
+  var EK=col==='black'?'#000':col==='white'?'#f8f8f8':col==='red'?'#e00020':'#0020e0';
+  ctx.fillStyle='#fff';
+  ctx.fillRect(x+S,y,S*3,S);ctx.fillRect(x,y+S,S*5,S*3);ctx.fillRect(x+S,y+4*S,S*3,S);
+  ctx.fillStyle=EK;ctx.fillRect(x+S,y+S,S*3,S*3);
+  ctx.fillStyle='#fff';ctx.fillRect(x+S,y+S,S,S);
+  if(sel){ctx.strokeStyle='#C86040';ctx.lineWidth=2;ctx.strokeRect(x-2,y-2,S*5+4,S*5+4);}
+}
+
 document.getElementById('cu-file').addEventListener('change',function(e){if(e.target.files[0])initEyeEd(e.target.files[0]);this.value='';});
+
 var cuPetURL=null;
-function confirmCu(){if(!eyeEdCV){toast('まず写真をアップしてください');return;}cuPetURL=eyeEdCV.toDataURL('image/png');selPetType='custom';document.getElementById('sel-pet-name').textContent='じぶんのコケ';updAllPets();toast('コケペット完成！🌿');}
+function confirmCu(){
+  if(!eyeEdCV){toast('まず写真をアップしてください');return;}
+  cuPetURL=eyeEdCV.toDataURL('image/png');
+  selPetType='custom';
+  document.getElementById('sel-pet-name').textContent='じぶんのコケ';
+  updAllPets();toast('コケペット完成！🌿');
+}
 
 // ══ STATE ══
 var selPetType='pixel',selPxIdx=0,photos=[],viaArr=[],flightNo='FL-'+String(1000+Math.floor(Math.random()*8999));
@@ -797,11 +1001,14 @@ function init(){
   document.getElementById('date-i').value=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'.');
   // グリッド
   buildPxGrid();
+  buildTransportGrid();
   // プレビュー
   document.getElementById('pt-fno').textContent=flightNo;
   syncPreview();
   // 写真グリッド初期化
   renderPhotoThumbs();
+  // 初期プレビュー同期（乗り物アイコン含む）
+  syncPreview();
   // 初回スクロールチェック
   onScroll();
   // ドラッグ＆ドロップ
@@ -885,6 +1092,8 @@ function syncPreview(){
   document.getElementById('pt-tc').textContent=to.slice(0,6);document.getElementById('pt-tn').textContent=to;
   var vr=document.getElementById('pt-via');vr.innerHTML='';
   viaArr.filter(function(v){return v.trim();}).forEach(function(v){var c=document.createElement('div');c.className='pt-chip';c.textContent=v;vr.appendChild(c);});
+  // 乗り物アイコンをプレビューに反映
+  updateTransportArrows();
   document.getElementById('pt-name').textContent=document.getElementById('p-name').value||'なまえ';
   document.getElementById('pt-hdl').textContent=document.getElementById('p-hdl').value||'@username';
   document.getElementById('pt-msg').textContent=document.getElementById('p-cmt').value||'よろしく！';
@@ -952,6 +1161,8 @@ function generateTicket(){
   document.getElementById('bp-tc').textContent=to.slice(0,6);document.getElementById('bp-tn').textContent=to;
   var bv=document.getElementById('bp-via');bv.innerHTML='';
   viaArr.filter(function(v){return v.trim();}).forEach(function(v){var c=document.createElement('div');c.className='bp-chip';c.textContent=v;bv.appendChild(c);});
+  // 乗り物アイコン
+  updateTransportArrows();
   document.getElementById('bp-date').textContent=document.getElementById('date-i').value||'-';
   document.getElementById('bp-find').textContent=document.getElementById('find-i').value||'-';
   document.getElementById('bp-mood').textContent=document.getElementById('mood-i').value||'-';
@@ -978,7 +1189,15 @@ function buildHQCanvas(sc2,cb){
   var y=24;ctx.fillStyle='#1A1A1A';ctx.font='700 12px "Press Start 2P",monospace';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText('MOSSARI AIR',20,y);ctx.font='8px "Press Start 2P",monospace';ctx.textAlign='right';ctx.fillStyle='#555';ctx.fillText(flightNo,bW-20,y);y+=24;
   ctx.strokeStyle='#1A1A1A';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(20,y);ctx.lineTo(bW-20,y);ctx.stroke();y+=12;
   var from=document.getElementById('from-i').value||'---',to=document.getElementById('to-i').value||'---';
-  ctx.fillStyle='#1A1A1A';ctx.font='700 16px "Press Start 2P",monospace';ctx.textAlign='left';ctx.fillText(from.slice(0,8),20,y);ctx.textAlign='right';ctx.fillText(to.slice(0,8),bW-20,y);ctx.textAlign='center';ctx.font='18px sans-serif';ctx.fillText('✈',bW/2,y);y+=36;
+  ctx.fillStyle='#1A1A1A';ctx.font='700 16px "Press Start 2P",monospace';ctx.textAlign='left';ctx.fillText(from.slice(0,8),20,y);ctx.textAlign='right';ctx.fillText(to.slice(0,8),bW-20,y);
+  // 乗り物SVGをcanvasに描画
+  var tsvg=getTransportSVG();
+  var svgBlob=new Blob(['<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22">'+tsvg.replace('<svg','<svg xmlns="http://www.w3.org/2000/svg"').replace(/viewBox/,'viewBox')+'</svg>'],{type:'image/svg+xml'});
+  var svgUrl=URL.createObjectURL(svgBlob);
+  var svgImg=new Image();
+  svgImg.onload=function(){ctx.drawImage(svgImg,bW/2-11,y-2,22,22);URL.revokeObjectURL(svgUrl);};
+  svgImg.src=svgUrl;
+  y+=36;
   var vias=viaArr.filter(function(v){return v.trim();});if(vias.length>0){ctx.fillStyle='#4AA890';ctx.font='700 10px "Noto Sans JP",sans-serif';ctx.textAlign='center';ctx.fillText('via: '+vias.join(' → '),bW/2,y);y+=20;}
   ctx.strokeStyle='#1A1A1A';ctx.setLineDash([6,4]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(20,y);ctx.lineTo(bW-20,y);ctx.stroke();ctx.setLineDash([]);y+=12;
   var pArr=photos.slice(0,3),n=pArr.length;
@@ -993,6 +1212,55 @@ function fallSave(c){var a=document.createElement('a');a.download='mossari-trave
 
 var toastTm=null;
 function toast(m){var el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(toastTm);toastTm=setTimeout(function(){el.classList.remove('show');},2600);}
+
+// ══ QR CODE ══
+var qrInstance = null;
+function showQR(){
+  var url = window.location.href;
+  document.getElementById('qr-url-display').textContent = url;
+  var container = document.getElementById('qr-container');
+  container.innerHTML = '';
+  try {
+    qrInstance = new QRCode(container, {
+      text: url,
+      width: 200,
+      height: 200,
+      colorDark: '#1A1A1A',
+      colorLight: '#F5F2EC',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  } catch(e) {
+    // fallback: QRCode not loaded
+    container.innerHTML = '<div style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#888;text-align:center;border:1px solid #ccc;">QRコードを<br>生成できませんでした</div>';
+  }
+  document.getElementById('qr-modal').style.display = 'flex';
+}
+
+function downloadQR(){
+  var container = document.getElementById('qr-container');
+  var img = container.querySelector('img');
+  var canvas = container.querySelector('canvas');
+  if(canvas){
+    var a = document.createElement('a');
+    a.download = 'mossari-travel-qr.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    toast('💾 QRコードを保存しました！');
+  } else if(img){
+    var a2 = document.createElement('a');
+    a2.download = 'mossari-travel-qr.png';
+    a2.href = img.src;
+    a2.click();
+    toast('💾 QRコードを保存しました！');
+  } else {
+    toast('保存できませんでした');
+  }
+}
+
+// ── QR モーダルの外クリックで閉じる
+document.getElementById('qr-modal').addEventListener('click', function(e){
+  if(e.target === this) this.style.display = 'none';
+});
 
 // ══════════════════════════════════════════
 //  BGM ENGINE — Web Audio API
