@@ -506,38 +506,26 @@ nav{
         </div>
         <input type="file" id="cu-file" accept="image/*" style="display:none">
         <div id="eye-area" style="display:none;">
-            <!-- 新方式：目玉リスト + スライダーで位置調整 -->
-            <div style="margin-bottom:10px;">
-              <div style="font-size:11px;font-weight:700;color:var(--ink3);margin-bottom:8px;">👁 目玉を追加して位置を調整しよう</div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
-                <button class="ec a" id="ec-bk" onclick="setEyeCol('black',this)">⬛ 黒</button>
-                <button class="ec" id="ec-wh" onclick="setEyeCol('white',this)">⬜ 白</button>
-                <button class="ec" id="ec-rd" onclick="setEyeCol('red',this)">🟥 赤</button>
-                <button class="ec" id="ec-bl" onclick="setEyeCol('blue',this)">🟦 青</button>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:11px;font-weight:700;">
-                <span>サイズ:</span>
-                <input type="range" id="eye-sz" min="2" max="8" value="4" oninput="redrawEye()" style="flex:1;accent-color:var(--ink);">
-                <span id="eye-sz-v">4px</span>
-              </div>
-              <button class="btn btn-black btn-sm" onclick="addEyeCenter()" style="margin-bottom:8px;">👁 目玉を追加する</button>
+            <div style="font-size:11px;font-weight:700;color:var(--ink3);margin-bottom:10px;">目玉の表情を選んでドラッグで配置しよう👁</div>
+            <!-- 目玉スタイル選択 -->
+            <div id="eye-style-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:var(--line);margin-bottom:12px;"></div>
+            <!-- サイズ -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:11px;font-weight:700;">
+              <span>サイズ:</span>
+              <input type="range" id="eye-sz" min="2" max="10" value="5" oninput="redrawEye()" style="flex:1;accent-color:var(--ink);">
+              <span id="eye-sz-v">5px</span>
             </div>
-            <!-- 目玉リスト（選択＆スライダー調整） -->
-            <div id="eye-list-ui" style="margin-bottom:10px;display:none;">
-              <div style="font-size:10px;font-weight:700;color:var(--ink3);margin-bottom:6px;">選択した目玉の位置を調整：</div>
-              <div id="eye-sel-display" style="background:var(--mintLL);border:2px solid var(--ink);padding:8px 10px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
-                <span style="font-size:20px;">👁</span>
-                <span id="eye-sel-label" style="font-size:11px;font-weight:700;">目玉 1</span>
-                <button onclick="deleteSelEye()" style="margin-left:auto;background:var(--terra);border:2px solid var(--ink);color:#fff;font-size:10px;font-weight:900;padding:3px 8px;cursor:pointer;">削除</button>
-              </div>
-              <div style="font-size:10px;font-weight:700;margin-bottom:4px;">← 左右 →</div>
-              <input type="range" id="eye-x-slider" min="0" max="100" value="50" oninput="moveSelEye()" style="width:100%;accent-color:var(--mintD);margin-bottom:8px;">
-              <div style="font-size:10px;font-weight:700;margin-bottom:4px;">↑ 上下 ↓</div>
-              <input type="range" id="eye-y-slider" min="0" max="100" value="50" oninput="moveSelEye()" style="width:100%;accent-color:var(--mintD);margin-bottom:8px;">
+            <!-- ヒント -->
+            <div style="font-size:10px;color:var(--ink3);background:var(--mintLL);border:1px solid var(--mintD);padding:8px 10px;margin-bottom:10px;line-height:1.6;">
+              💡 キャンバスをドラッグ・タップして目玉ペアを動かしてね。<br>
+              追加ボタンで目玉ペアを増やせます。
             </div>
-            <!-- 目玉サムネイル一覧 -->
-            <div id="eye-thumb-list" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;"></div>
-            <canvas id="eye-cv" style="width:100%;max-width:300px;display:block;margin:0 auto;border:var(--line);image-rendering:pixelated;"></canvas>
+            <!-- 操作ボタン -->
+            <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+              <button class="btn btn-black btn-sm" style="flex:1;" onclick="addEyePair()">👁👁 目玉ペアを追加</button>
+              <button class="btn btn-off btn-sm" style="flex:1;" onclick="deleteSelEye()">🗑 選択中を削除</button>
+            </div>
+            <canvas id="eye-cv" style="width:100%;max-width:320px;display:block;margin:0 auto;border:var(--line);cursor:grab;touch-action:none;"></canvas>
             <button class="btn btn-mint btn-sm" style="margin-top:10px;" onclick="confirmCu()">このコケに決める ✓</button>
           </div>
       </div>
@@ -724,10 +712,28 @@ nav{
     </div>
     <div class="to-btns">
       <button class="btn btn-mint" onclick="saveHQ()">💾 高画質で保存（3x）</button>
-      <button class="btn btn-blk" onclick="shareIt()">📤 SNSでシェア</button>
+      <button class="btn btn-blk" onclick="showShareMenu()">📤 SNSでシェア</button>
       <button class="btn btn-off btn-sm" onclick="document.getElementById('ticket-overlay').classList.remove('open')">✏ 編集に戻る</button>
       <button class="btn btn-off btn-sm" onclick="location.reload()">🔄 最初からやり直す</button>
     </div>
+  </div>
+</div>
+
+<!-- SNS SHARE MODAL -->
+<div id="share-modal" style="position:fixed;inset:0;z-index:950;background:rgba(26,26,26,.92);display:none;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:var(--off);border:var(--line);box-shadow:6px 6px 0 var(--mint);padding:24px;max-width:360px;width:100%;">
+    <div style="font-family:var(--fp);font-size:8px;color:var(--ink);margin-bottom:16px;letter-spacing:1px;">📤 SNSでシェア</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+      <button class="btn" id="share-x"     style="background:#000;color:#fff;border-color:#000;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        X（Twitter）でシェア
+      </button>
+      <button class="btn" id="share-line"  style="background:#06C755;color:#fff;border-color:#06C755;font-size:13px;">💬 LINEでシェア</button>
+      <button class="btn" id="share-insta" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;border:none;font-size:13px;">📸 Instagramへ（画像保存）</button>
+      <button class="btn" id="share-copy"  style="background:var(--off2);color:var(--ink);font-size:13px;">🔗 リンクをコピー</button>
+      <button class="btn" id="share-native" style="background:var(--mint);color:var(--ink);font-size:13px;display:none;">📱 その他のアプリ</button>
+    </div>
+    <button class="btn btn-off btn-sm" onclick="document.getElementById('share-modal').style.display='none'">閉じる</button>
   </div>
 </div>
 
@@ -848,13 +854,112 @@ function updateTransportArrows(){
   if(rv){rv.style.cssText='font-size:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--ink);';rv.innerHTML=svg;}
 }
 
-// ══ EYE EDITOR (新方式：スライダー調整) ══
-var eyeList=[],eyeColMode='black',eyeEdImg=null,eyeEdCV=null,selEI=0;
+// ══ EYE EDITOR (ドラッグ方式・ペア・表情バリエーション) ══
 
-function setEyeCol(c,btn){
-  eyeColMode=c;
-  document.querySelectorAll('.ec').forEach(function(b){b.classList.remove('a');});
-  btn.classList.add('a');
+// 目玉の表情定義（ピクセルアート、両目セット）
+var EYE_STYLES = [
+  {id:'normal',   label:'ふつう',
+    draw:function(ctx,x,y,S){
+      // 白目
+      ctx.fillStyle='#fff';fillOval(ctx,x,y,S*3,S*4);
+      // 黒目
+      ctx.fillStyle='#111';ctx.fillRect(x+S,y+S,S,S*2);ctx.fillRect(x,y+S,S,S);ctx.fillRect(x,y+2*S,S*2,S);
+      // ハイライト
+      ctx.fillStyle='#fff';ctx.fillRect(x+S,y,S,S);
+    }},
+  {id:'happy',    label:'にこにこ',
+    draw:function(ctx,x,y,S){
+      ctx.fillStyle='#fff';fillOval(ctx,x,y,S*3,S*4);
+      // 笑い目（下弧）
+      ctx.fillStyle='#111';ctx.fillRect(x,y+2*S,S*3,S);ctx.fillRect(x,y+S,S,S);ctx.fillRect(x+2*S,y+S,S,S);
+    }},
+  {id:'star',     label:'きらきら',
+    draw:function(ctx,x,y,S){
+      ctx.fillStyle='#fff';fillOval(ctx,x,y,S*4,S*4);
+      // 星型（十字）
+      ctx.fillStyle='#FFD700';ctx.fillRect(x+S,y,S*2,S*4);ctx.fillRect(x,y+S,S*4,S*2);
+      ctx.fillStyle='#fff';ctx.fillRect(x+S,y+S,S,S);
+    }},
+  {id:'sleepy',   label:'ねむい',
+    draw:function(ctx,x,y,S){
+      // 半目
+      ctx.fillStyle='#fff';ctx.fillRect(x,y+S*2,S*3,S*2);
+      ctx.fillStyle='#111';ctx.fillRect(x,y+S*2,S*2,S);
+      // まぶた（上）
+      ctx.fillStyle='#FFB6A3';ctx.fillRect(x,y+S,S*3,S);
+    }},
+  {id:'wink',     label:'ウインク',
+    draw:function(ctx,x,y,S){
+      // 片目（右）は通常
+      ctx.fillStyle='#fff';fillOval(ctx,x,y,S*3,S*4);
+      ctx.fillStyle='#111';ctx.fillRect(x+S,y+S,S,S*2);ctx.fillRect(x,y+S,S,S);ctx.fillRect(x,y+2*S,S*2,S);
+      ctx.fillStyle='#fff';ctx.fillRect(x+S,y,S,S);
+    },
+    drawRight:function(ctx,x,y,S){
+      // もう片目は閉じ目
+      ctx.fillStyle='#111';ctx.fillRect(x,y+2*S,S*3,S);
+    }},
+  {id:'angry',    label:'おこ',
+    draw:function(ctx,x,y,S){
+      ctx.fillStyle='#fff';fillOval(ctx,x,y,S*3,S*4);
+      ctx.fillStyle='#111';ctx.fillRect(x+S,y+S,S,S*2);ctx.fillRect(x,y+2*S,S*2,S);
+      // への字眉
+      ctx.fillStyle='#111';ctx.fillRect(x+S*2,y-S,S,S);ctx.fillRect(x,y-S*2,S*2,S);
+    }},
+  {id:'tears',    label:'なみだ',
+    draw:function(ctx,x,y,S){
+      ctx.fillStyle='#fff';fillOval(ctx,x,y,S*3,S*4);
+      ctx.fillStyle='#111';ctx.fillRect(x+S,y+S,S,S*2);ctx.fillRect(x,y+S,S,S);ctx.fillRect(x,y+2*S,S*2,S);
+      ctx.fillStyle='#fff';ctx.fillRect(x+S,y,S,S);
+      // 涙
+      ctx.fillStyle='#6CF';ctx.fillRect(x,y+4*S,S,S*2);ctx.fillRect(x,y+6*S,S*2,S);
+    }},
+  {id:'heart',    label:'ハート',
+    draw:function(ctx,x,y,S){
+      ctx.fillStyle='#fff';fillOval(ctx,x,y,S*4,S*4);
+      // ハート
+      ctx.fillStyle='#F55';ctx.fillRect(x,y,S,S);ctx.fillRect(x+S*2,y,S,S);ctx.fillRect(x,y+S,S*3,S);ctx.fillRect(x+S,y+S*2,S,S);
+    }},
+];
+
+function fillOval(ctx,x,y,w,h){
+  // 疑似楕円（ピクセル）
+  var hw=Math.floor(w/2),hh=Math.floor(h/2);
+  ctx.fillRect(x+1,y,w-2,1);ctx.fillRect(x,y+1,w,h-2);ctx.fillRect(x+1,y+h-1,w-2,1);
+}
+
+var eyePairs=[];       // [{x,y,style,sz}] x,y は canvas上の絶対座標
+var selPairIdx=0;
+var selStyleId='normal';
+var eyeEdImg=null,eyeEdCV=null;
+var dragState={active:false,pairIdx:-1,startX:0,startY:0,origX:0,origY:0};
+
+function buildEyeStyleGrid(){
+  var g=document.getElementById('eye-style-grid');if(!g)return;g.innerHTML='';
+  EYE_STYLES.forEach(function(es,i){
+    var btn=document.createElement('button');
+    var isSel=es.id===selStyleId;
+    btn.style.cssText='padding:8px 4px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);background:'+(isSel?'var(--ink)':'var(--off)')+';cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:background .12s;';
+    if((i+1)%4===0)btn.style.borderRight='none';
+    if(i>=EYE_STYLES.length-4)btn.style.borderBottom='none';
+    // 目玉プレビュー（小さなcanvas）
+    var mini=document.createElement('canvas');mini.width=mini.height=28;
+    var mctx=mini.getContext('2d');mctx.imageSmoothingEnabled=false;
+    mctx.fillStyle=isSel?'#1A1A1A':'#F5F2EC';mctx.fillRect(0,0,28,28);
+    // 左目を中央に描画（S=3）
+    var S=3;var mx=14-S*3/2-S/2,my=14-S*2;
+    es.draw(mctx,mx,my,S);
+    var nm=document.createElement('div');nm.textContent=es.label;nm.style.cssText='font-size:7px;font-weight:700;color:'+(isSel?'var(--mint)':'var(--ink3)')+';font-family:var(--fm);';
+    btn.appendChild(mini);btn.appendChild(nm);
+    (function(sid){btn.onclick=function(){selStyleId=sid;buildEyeStyleGrid();updateSelPairStyle();};})(es.id);
+    g.appendChild(btn);
+  });
+}
+
+function updateSelPairStyle(){
+  if(eyePairs.length===0)return;
+  eyePairs[selPairIdx].style=selStyleId;
+  redrawEye();
 }
 
 function initEyeEd(file){
@@ -864,109 +969,116 @@ function initEyeEd(file){
     img.onload=function(){
       eyeEdImg=img;
       document.getElementById('eye-area').style.display='block';
-      var cv=document.getElementById('eye-cv');
-      eyeEdCV=cv;
-      var mW=Math.min(window.innerWidth-60,280);
+      var cv=document.getElementById('eye-cv');eyeEdCV=cv;
+      var mW=Math.min(window.innerWidth-60,320);
       var sc=mW/img.width;
-      cv.width=Math.round(img.width*sc);
-      cv.height=Math.round(img.height*sc);
-      eyeList=[];
-      selEI=0;
-      redrawEye();
-      renderEyeThumbList();
+      cv.width=Math.round(img.width*sc);cv.height=Math.round(img.height*sc);
+      eyePairs=[];selPairIdx=0;
+      buildEyeStyleGrid();
+      // 最初から1ペア配置
+      addEyePair();
+      setupEyeDragEvents(cv);
     };
     img.src=ev.target.result;
   };
   r.readAsDataURL(file);
 }
 
-function addEyeCenter(){
-  var S=parseInt(document.getElementById('eye-sz').value)||4;
-  var cv=eyeEdCV;if(!cv)return;
-  // 中央に追加、xpct/ypct は 0〜100% で管理
-  eyeList.push({xpct:50,ypct:50,sz:S,col:eyeColMode});
-  selEI=eyeList.length-1;
-  updateSlidersFromSel();
+function addEyePair(){
+  if(!eyeEdCV)return;
+  var S=parseInt(document.getElementById('eye-sz').value)||5;
+  var cv=eyeEdCV;
+  // 中央に左右並べて配置
+  var cx=cv.width/2,cy=cv.height/2;
+  var gap=S*7;
+  eyePairs.push({x:cx-gap,y:cy,style:selStyleId,sz:S});
+  selPairIdx=eyePairs.length-1;
   redrawEye();
-  renderEyeThumbList();
-  document.getElementById('eye-list-ui').style.display='block';
 }
 
 function deleteSelEye(){
-  if(eyeList.length===0)return;
-  eyeList.splice(selEI,1);
-  selEI=Math.max(0,selEI-1);
-  if(eyeList.length===0)document.getElementById('eye-list-ui').style.display='none';
-  else updateSlidersFromSel();
+  if(eyePairs.length===0)return;
+  eyePairs.splice(selPairIdx,1);
+  selPairIdx=Math.max(0,selPairIdx-1);
   redrawEye();
-  renderEyeThumbList();
-}
-
-function selectEye(i){
-  selEI=i;
-  updateSlidersFromSel();
-  redrawEye();
-  renderEyeThumbList();
-  document.getElementById('eye-list-ui').style.display='block';
-}
-
-function updateSlidersFromSel(){
-  if(eyeList.length===0)return;
-  var e=eyeList[selEI];
-  document.getElementById('eye-x-slider').value=e.xpct;
-  document.getElementById('eye-y-slider').value=e.ypct;
-  document.getElementById('eye-sel-label').textContent='目玉 '+(selEI+1);
-}
-
-function moveSelEye(){
-  if(eyeList.length===0)return;
-  eyeList[selEI].xpct=parseInt(document.getElementById('eye-x-slider').value);
-  eyeList[selEI].ypct=parseInt(document.getElementById('eye-y-slider').value);
-  redrawEye();
-}
-
-function renderEyeThumbList(){
-  var ul=document.getElementById('eye-thumb-list');if(!ul)return;
-  ul.innerHTML='';
-  eyeList.forEach(function(e,i){
-    var btn=document.createElement('button');
-    btn.style.cssText='padding:6px 10px;border:2px solid '+(i===selEI?'var(--terra)':'var(--ink)')+';background:'+(i===selEI?'var(--terra-ll)':'var(--off)')+';cursor:pointer;font-size:9px;font-weight:700;transition:all .12s;display:flex;align-items:center;gap:4px;';
-    btn.innerHTML='<span style="font-size:14px;">👁</span><span style="font-family:var(--fm);">目玉'+(i+1)+'</span>';
-    (function(idx){btn.onclick=function(){selectEye(idx);};})(i);
-    ul.appendChild(btn);
-  });
-}
-
-function pctToCanvas(xpct,ypct,S){
-  if(!eyeEdCV)return{x:0,y:0};
-  var cv=eyeEdCV;
-  var x=Math.round((xpct/100)*(cv.width-S*5));
-  var y=Math.round((ypct/100)*(cv.height-S*5));
-  return{x:x,y:y};
 }
 
 function redrawEye(){
   if(!eyeEdCV)return;
   var cv=eyeEdCV,ctx=cv.getContext('2d');
   ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.imageSmoothingEnabled=false;
   // チェッカー背景
-  for(var y=0;y<cv.height;y+=16)for(var x=0;x<cv.width;x+=16){ctx.fillStyle=(x+y)/16%2===0?'#e8e0d0':'#f8f0e0';ctx.fillRect(x,y,16,16);}
+  for(var gy=0;gy<cv.height;gy+=16)for(var gx=0;gx<cv.width;gx+=16){ctx.fillStyle=(gx+gy)/16%2===0?'#e8e0d0':'#f8f0e0';ctx.fillRect(gx,gy,16,16);}
   if(eyeEdImg)ctx.drawImage(eyeEdImg,0,0,cv.width,cv.height);
-  var S=parseInt(document.getElementById('eye-sz').value)||4;
-  document.getElementById('eye-sz-v').textContent=S+'px';
-  eyeList.forEach(function(e,i){
-    var pos=pctToCanvas(e.xpct,e.ypct,e.sz||S);
-    drawEye1(ctx,pos.x,pos.y,e.sz||S,e.col||'black',i===selEI);
+  var globalS=parseInt(document.getElementById('eye-sz').value)||5;
+  document.getElementById('eye-sz-v').textContent=globalS+'px';
+  eyePairs.forEach(function(p,i){
+    var S=p.sz||globalS;
+    var gap=S*7;
+    var isSel=i===selPairIdx;
+    var def=EYE_STYLES.find(function(e){return e.id===p.style;})||EYE_STYLES[0];
+    // 選択枠
+    if(isSel){
+      ctx.strokeStyle='var(--terra, #C86040)';ctx.lineWidth=2;ctx.setLineDash([4,3]);
+      ctx.strokeRect(p.x-4,p.y-4,gap+S*3+8,S*4+8);ctx.setLineDash([]);
+    }
+    // 左目
+    def.draw(ctx,Math.round(p.x),Math.round(p.y),S);
+    // 右目（ウインクは専用drawRight、他は同じdraw）
+    if(def.drawRight)def.drawRight(ctx,Math.round(p.x+gap),Math.round(p.y),S);
+    else def.draw(ctx,Math.round(p.x+gap),Math.round(p.y),S);
   });
 }
 
-function drawEye1(ctx,x,y,S,col,sel){
-  var EK=col==='black'?'#000':col==='white'?'#f8f8f8':col==='red'?'#e00020':'#0020e0';
-  ctx.fillStyle='#fff';
-  ctx.fillRect(x+S,y,S*3,S);ctx.fillRect(x,y+S,S*5,S*3);ctx.fillRect(x+S,y+4*S,S*3,S);
-  ctx.fillStyle=EK;ctx.fillRect(x+S,y+S,S*3,S*3);
-  ctx.fillStyle='#fff';ctx.fillRect(x+S,y+S,S,S);
-  if(sel){ctx.strokeStyle='#C86040';ctx.lineWidth=2;ctx.strokeRect(x-2,y-2,S*5+4,S*5+4);}
+function setupEyeDragEvents(cv){
+  function getCanvasPos(e){
+    var rect=cv.getBoundingClientRect();
+    var scX=cv.width/rect.width,scY=cv.height/rect.height;
+    var clientX=e.touches?e.touches[0].clientX:e.clientX;
+    var clientY=e.touches?e.touches[0].clientY:e.clientY;
+    return{x:(clientX-rect.left)*scX,y:(clientY-rect.top)*scY};
+  }
+  function findPairAt(cx,cy){
+    var S=parseInt(document.getElementById('eye-sz').value)||5;
+    for(var i=eyePairs.length-1;i>=0;i--){
+      var p=eyePairs[i],gap=p.sz*7||S*7;
+      var pw=gap+(p.sz||S)*3,ph=(p.sz||S)*4;
+      if(cx>=p.x-8&&cx<=p.x+pw+8&&cy>=p.y-8&&cy<=p.y+ph+8)return i;
+    }
+    return -1;
+  }
+  function onStart(e){
+    if(e.cancelable)e.preventDefault();
+    var pos=getCanvasPos(e);
+    var idx=findPairAt(pos.x,pos.y);
+    if(idx>=0){
+      selPairIdx=idx;
+      dragState={active:true,pairIdx:idx,startX:pos.x,startY:pos.y,origX:eyePairs[idx].x,origY:eyePairs[idx].y};
+      cv.style.cursor='grabbing';
+      redrawEye();
+    } else {
+      // どこにも当たらなければ新規ペアをそこに追加
+      var S=parseInt(document.getElementById('eye-sz').value)||5;
+      eyePairs.push({x:pos.x-S*3,y:pos.y-S*2,style:selStyleId,sz:S});
+      selPairIdx=eyePairs.length-1;
+      dragState={active:true,pairIdx:selPairIdx,startX:pos.x,startY:pos.y,origX:eyePairs[selPairIdx].x,origY:eyePairs[selPairIdx].y};
+      redrawEye();
+    }
+  }
+  function onMove(e){
+    if(!dragState.active)return;
+    if(e.cancelable)e.preventDefault();
+    var pos=getCanvasPos(e);
+    var dx=pos.x-dragState.startX,dy=pos.y-dragState.startY;
+    eyePairs[dragState.pairIdx].x=dragState.origX+dx;
+    eyePairs[dragState.pairIdx].y=dragState.origY+dy;
+    redrawEye();
+  }
+  function onEnd(){dragState.active=false;cv.style.cursor='grab';}
+  cv.addEventListener('mousedown',onStart);cv.addEventListener('touchstart',onStart,{passive:false});
+  cv.addEventListener('mousemove',onMove);cv.addEventListener('touchmove',onMove,{passive:false});
+  cv.addEventListener('mouseup',onEnd);cv.addEventListener('touchend',onEnd,{passive:true});
 }
 
 document.getElementById('cu-file').addEventListener('change',function(e){if(e.target.files[0])initEyeEd(e.target.files[0]);this.value='';});
@@ -1207,8 +1319,56 @@ function buildHQCanvas(sc2,cb){
   function aft(){ctx.strokeStyle='#1A1A1A';ctx.setLineDash([4,3]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(20,y);ctx.lineTo(bW-20,y);ctx.stroke();ctx.setLineDash([]);y+=10;var ms=[{l:'DATE',v:document.getElementById('date-i').value||'-',x:20},{l:'FIND',v:document.getElementById('find-i').value||'-',x:bW/3},{l:'MOOD',v:document.getElementById('mood-i').value||'-',x:bW*2/3}];ms.forEach(function(m){ctx.fillStyle='#888';ctx.font='5px "Press Start 2P",monospace';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(m.l,m.x,y);ctx.fillStyle='#1A1A1A';ctx.font='700 16px "Shippori Mincho",serif';ctx.fillText(m.v,m.x,y+10);});y+=36;ctx.strokeStyle='#1A1A1A';ctx.setLineDash([5,4]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(20,y);ctx.lineTo(bW-20,y);ctx.stroke();ctx.setLineDash([]);y+=12;var pi=document.getElementById('bp-pet'),pm=new Image();pm.onload=function(){ctx.imageSmoothingEnabled=false;ctx.drawImage(pm,20,y,60,60);ctx.imageSmoothingEnabled=true;ctx.strokeStyle='#1A1A1A';ctx.lineWidth=2;ctx.strokeRect(20,y,60,60);ctx.fillStyle='#1A1A1A';ctx.font='700 20px "Shippori Mincho",serif';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(document.getElementById('p-name').value||'なまえ',90,y+2);ctx.fillStyle='#555';ctx.font='6px "Press Start 2P",monospace';ctx.fillText(document.getElementById('p-hdl').value||'@username',90,y+28);ctx.font='13px "Shippori Mincho",serif';ctx.fillText(document.getElementById('p-cmt').value||'よろしく！',90,y+44);cb(out);};pm.src=pi.src||'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';}
 }
 function saveHQ(){toast('生成中...');setTimeout(function(){buildHQCanvas(3,function(c){var a=document.createElement('a');a.download='mossari-travel.png';a.href=c.toDataURL('image/png');a.click();toast('💾 高画質で保存しました！');});},100);}
-function shareIt(){toast('生成中...');setTimeout(function(){buildHQCanvas(2,function(c){c.toBlob(function(blob){var f=new File([blob],'mossari-travel.png',{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({title:'もっさりトラベル',text:'🌿 #もっさりトラベル',files:[f]}).catch(function(){fallSave(c);});}else fallSave(c);});});},100);}
-function fallSave(c){var a=document.createElement('a');a.download='mossari-travel.png';a.href=c.toDataURL('image/png');a.click();toast('📤 保存してシェアしてね！');}
+var _sharedCanvas=null;
+function showShareMenu(){
+  toast('画像を生成中...');
+  setTimeout(function(){
+    buildHQCanvas(2,function(c){
+      _sharedCanvas=c;
+      var url=window.location.href;
+      var text='🌿 もっさりトラベルで旅の記録を作ったよ！ %23もっさりトラベル';
+      // X
+      document.getElementById('share-x').onclick=function(){
+        window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent('🌿 もっさりトラベルで旅の記録を作ったよ！\n#もっさりトラベル\n')+encodeURIComponent(url),'_blank');
+      };
+      // LINE
+      document.getElementById('share-line').onclick=function(){
+        window.open('https://social-plugins.line.me/lineit/share?url='+encodeURIComponent(url)+'&text='+encodeURIComponent('🌿 もっさりトラベル #もっさりトラベル'),'_blank');
+      };
+      // Instagram（画像保存→手動シェア）
+      document.getElementById('share-insta').onclick=function(){
+        var a=document.createElement('a');a.download='mossari-travel.png';a.href=c.toDataURL('image/png');a.click();
+        toast('📸 画像を保存しました！Instagramで投稿してね');
+      };
+      // リンクコピー
+      document.getElementById('share-copy').onclick=function(){
+        navigator.clipboard.writeText(url).then(function(){toast('🔗 リンクをコピーしました！');}).catch(function(){
+          var ta=document.createElement('textarea');ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('🔗 リンクをコピーしました！');
+        });
+      };
+      // ネイティブシェア（モバイル）
+      var nativeBtn=document.getElementById('share-native');
+      if(navigator.share){
+        nativeBtn.style.display='block';
+        nativeBtn.onclick=function(){shareIt();};
+      }
+      document.getElementById('share-modal').style.display='flex';
+    });
+  },100);
+}
+function shareIt(){
+  if(!_sharedCanvas){buildHQCanvas(2,function(c){_sharedCanvas=c;_doNativeShare(c);});return;}
+  _doNativeShare(_sharedCanvas);
+}
+function _doNativeShare(c){
+  c.toBlob(function(blob){
+    var f=new File([blob],'mossari-travel.png',{type:'image/png'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[f]})){
+      navigator.share({title:'もっさりトラベル',text:'🌿 #もっさりトラベル',files:[f]}).catch(function(){fallSave(c);});
+    } else fallSave(c);
+  });
+}
+function fallSave(c){var a=document.createElement('a');a.download='mossari-travel.png';a.href=c.toDataURL('image/png');a.click();toast('📤 画像を保存しました！');}
 
 var toastTm=null;
 function toast(m){var el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(toastTm);toastTm=setTimeout(function(){el.classList.remove('show');},2600);}
